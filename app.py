@@ -1,4 +1,25 @@
 import streamlit as st
+import os
+import pandas as pd
+# ... any other imports ...
+
+# ==========================================
+# 1. PASTE THE DEBUG CODE HERE
+# ==========================================
+st.title("Debug Info") # Temporary title
+st.write("Current Working Directory:", os.getcwd()) # Show where the server thinks it is
+
+# This lists all files in the current folder (usually the repo root)
+st.write("Files in root:", os.listdir()) 
+# ==========================================
+
+# --- Main app logic and function definitions follow ---
+
+# @st.cache_resource  
+def load_model():
+    # Your original model loading logic is here
+    pass
+import streamlit as st
 import requests
 import json
 import time
