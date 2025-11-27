@@ -1,25 +1,6 @@
 import streamlit as st
 import os
 import pandas as pd
-# ... any other imports ...
-
-# ==========================================
-# 1. PASTE THE DEBUG CODE HERE
-# ==========================================
-st.title("Debug Info") # Temporary title
-st.write("Current Working Directory:", os.getcwd()) # Show where the server thinks it is
-
-# This lists all files in the current folder (usually the repo root)
-st.write("Files in root:", os.listdir()) 
-# ==========================================
-
-# --- Main app logic and function definitions follow ---
-
-# @st.cache_resource  
-def load_model():
-    # Your original model loading logic is here
-    pass
-import streamlit as st
 import requests
 import json
 import time
@@ -33,9 +14,9 @@ SIMULATE_GEMINI_API = False
 DASHBOARD_BG_URL = "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=2831&auto=format&fit=crop"
 
 # --- FIXED: New Reliable Stadium Image for Home Page ---
-# This is a high-quality image of a soccer pitch/stadium to ensure no "trains" or broken links
 HOME_BG_URL = "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?q=80&w=2070&auto=format&fit=crop"
 
+# The debugger confirmed this is the correct filename and location (in the root)
 MODEL_FILE = 'xgboost_injury_model.pkl'
 
 # --- Player Data ---
@@ -117,13 +98,16 @@ def calculate_risk(inputs):
         return min(100, max(0, int(base_score + acwr_score + wellness_penalty + age_penalty)))
     
     if not MODEL_LOADED:
+        # NOTE: This is the heuristic fallback mode
         return fallback_score(age, minutes, ratio, injuries, wellness)
     
     try:
+        # Features array creation for model prediction
         features = np.array([[age, minutes, ratio, injuries, wellness]])
         probability_of_injury = model.predict_proba(features)[0][1]
         return round(probability_of_injury * 100)
     except Exception as e:
+        # If prediction fails (e.g., mismatched feature names, broken model object), fall back
         return fallback_score(age, minutes, ratio, injuries, wellness)
 
 def navigate_to(page):
@@ -359,6 +343,7 @@ def page_dashboard():
                 </div>
                 """, unsafe_allow_html=True)
             
+            # The warning remains in case the model file is corrupted, but should now be gone if the file loaded correctly.
             if not MODEL_LOADED:
                  st.warning("Running in heuristic fallback mode (Model file not found).")
 
