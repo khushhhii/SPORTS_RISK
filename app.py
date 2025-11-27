@@ -63,13 +63,31 @@ PLAYER_DATA = {
 }
 
 # Load the model
+# --------------------------------------------------------------------------------
+# !!! BEGIN UPDATED DIAGNOSTIC CODE !!!
+# --------------------------------------------------------------------------------
 try:
     with open(MODEL_FILE, 'rb') as file:
         model = pickle.load(file)
     MODEL_LOADED = True
-except Exception:
+    st.success("Model loaded successfully! 🎉 Heuristic fallback mode disabled.")
+    
+except FileNotFoundError:
+    st.error(f"Error: Model file '{MODEL_FILE}' not found. Please check GitHub sync.")
     model = None
     MODEL_LOADED = False
+    
+except Exception as e:
+    # This block executes if the file exists, but the content is invalid 
+    # (e.g., LFS pointer, corruption, version mismatch).
+    st.error(f"FATAL MODEL LOAD ERROR: {e}. Model is unusable.")
+    st.info("💡 Please check the model file's size on GitHub (possible Git LFS issue) or library versions.")
+    model = None
+    MODEL_LOADED = False
+# --------------------------------------------------------------------------------
+# !!! END UPDATED DIAGNOSTIC CODE !!!
+# --------------------------------------------------------------------------------
+
 
 # --- Helper Functions ---
 
@@ -282,11 +300,11 @@ def page_dashboard():
     with col_main:
         if selected_player_name == "Select Player...":
              st.markdown("""
-            <div class="glass-card" style="text-align: center; padding: 50px;">
-                <h2 style="color: #00BFFF;">WAITING FOR SELECTION</h2>
-                <p>Select a player from the roster to generate a live risk assessment.</p>
-            </div>
-            """, unsafe_allow_html=True)
+             <div class="glass-card" style="text-align: center; padding: 50px;">
+                 <h2 style="color: #00BFFF;">WAITING FOR SELECTION</h2>
+                 <p>Select a player from the roster to generate a live risk assessment.</p>
+             </div>
+             """, unsafe_allow_html=True)
         else:
             # Calculate Risk
             risk_inputs = {
@@ -345,6 +363,8 @@ def page_dashboard():
             
             # The warning remains in case the model file is corrupted, but should now be gone if the file loaded correctly.
             if not MODEL_LOADED:
+                 # This will only show if one of the 'except' blocks above was hit.
+                 # The 'except' blocks now include descriptive error messages.
                  st.warning("Running in heuristic fallback mode (Model file not found).")
 
 # --- Main Logic ---
